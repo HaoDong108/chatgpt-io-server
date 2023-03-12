@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import { BypassServer, AppDbContext, Log } from "./classes/index.js";
 import { Profile, SocketClient, IpData, Result } from "./dto/index.js";
 import { ClientStatus, AccountType, ClientType, LogLevel } from "./enums/index.js";
+import IpStatus  from "./enums/ip-status.js";
 import Linq from "./utils/linq.js";
 import Wait from "./utils/wait.js";
 
@@ -46,7 +47,12 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 io.on("connection", (socket) => {
-	const clientIp: string = socket.handshake.headers["x-real-ip"].toString();
+	var clientIp: string = "::1";
+	if(socket.handshake.headers["x-real-ip"] != null){
+        clientIp = socket.handshake.headers['x-real-ip'].toString();
+    }else{
+        clientIp = socket.handshake.address;
+    }
 	const query = socket.handshake.query;
 
 	if (!query.client || !query.version || !query.versionCode) {
@@ -219,6 +225,6 @@ io.on("connection", (socket) => {
 	});
 });
 
-server.listen(process.env.PORT, () => {
-	log.info(`Server started on port ${process.env.PORT}`);
+server.listen(process.env.PORT||7087, () => {
+	log.info(`Server started on port ${process.env.PORT||7087}`);
 });
